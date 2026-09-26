@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   label: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
     marginBottom: 10,
     textTransform: 'uppercase',
