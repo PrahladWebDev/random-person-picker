@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "RandomPick",
+    "name": "Random Person Picker",
     "slug": "randompick",
     "scheme": "randompick",
     "version": "1.0.0",
@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#6C5CE7"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },
@@ -31,7 +33,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#6C5CE7"
       },
-      "permissions": ["READ_MEDIA_IMAGES", "CAMERA"]
+      "permissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       [
@@ -41,6 +47,11 @@
           "cameraPermission": "RandomPick needs access to your camera so you can take a picture for each person."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "21b4cd59-b468-4ea5-b678-6347853a6a14"
+      }
+    }
   }
 }
