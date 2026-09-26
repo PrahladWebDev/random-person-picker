@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "RandomPick",
+    "slug": "randompick",
+    "scheme": "randompick",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6C5CE7"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.prahlad.randompick",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "RandomPick needs access to your photos so you can add a picture for each person.",
+        "NSCameraUsageDescription": "RandomPick needs access to your camera so you can take a picture for each person."
+      }
+    },
+    "android": {
+      "package": "com.prahlad.randompick",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#6C5CE7"
+      },
+      "permissions": ["READ_MEDIA_IMAGES", "CAMERA"]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "RandomPick needs access to your photos so you can add a picture for each person.",
+          "cameraPermission": "RandomPick needs access to your camera so you can take a picture for each person."
+        }
+      ]
+    ]
+  }
+}
