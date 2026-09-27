@@ -10,6 +10,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~57.0.21",
     "expo-audio": "~57.0.5",
     "expo-haptics": "~57.0.3",

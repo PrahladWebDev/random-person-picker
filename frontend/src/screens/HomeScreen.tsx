@@ -1,17 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/person';
 import PrimaryButton from '../components/PrimaryButton';
 import { useThemeColors } from '../useThemeColors';
 import { usePeople } from '../context/PeopleContext';
+import { useAuth } from '../context/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
   const colors = useThemeColors();
   const { clearAll } = usePeople();
+  const { user, logout } = useAuth();
 
   const handleStart = () => {
     clearAll();
@@ -23,8 +25,28 @@ export default function HomeScreen({ navigation }: Props) {
     navigation.navigate('SavedPeople');
   };
 
+  const handleSignOut = () => {
+    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: () => logout() },
+    ]);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.topBar}>
+        {user ? (
+          <Text style={[styles.email, { color: colors.subtext }]} numberOfLines={1}>
+            {user.email}
+          </Text>
+        ) : (
+          <View />
+        )}
+        <Pressable onPress={handleSignOut}>
+          <Text style={[styles.signOut, { color: colors.primary }]}>Sign Out</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.center}>
         <View style={[styles.logo, { backgroundColor: colors.primary }]}>
           <Text style={styles.logoEmoji}>🎲</Text>
@@ -52,6 +74,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 40,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  email: {
+    fontSize: 13,
+    flexShrink: 1,
+    marginRight: 12,
+  },
+  signOut: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   center: {
     flex: 1,
@@ -84,3 +120,4 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 });
+

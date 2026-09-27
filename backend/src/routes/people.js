@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const Entry = require('../models/Entry');
 const { uploadEntryPhoto, deleteEntryPhoto } = require('../config/cloudinary');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -16,10 +17,16 @@ function bufferToDataUri(file) {
   return `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 }
 
-// GET /api/people — list every saved entry, newest first
+// Every route below requires a signed-in user (Authorization: Bearer
+// <token>). requireAuth sets req.ownerId to that user's id, and every query
+// filters or checks against it — this is what keeps one account's saved
+// people/photos from ever being returned to a different account.
+router.use(requireAuth);
+
+// GET /api/people — list this account's saved entries, newest first
 router.get('/', async (req, res) => {
   try {
-    const people = await Entry.find().sort({ createdAt: -1 });
+    const people = await Entry.find({ ownerId: req.ownerId }).sort({ createdAt: -1 });
     res.json(people);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load saved people.' });
@@ -51,7 +58,12 @@ router.post('/', upload.single('photo'), async (req, res) => {
       console.log('Cloudinary upload OK:', imagePublicId);
     }
 
-    const entry = await Entry.create({ name: name.trim(), imageUrl, imagePublicId });
+    const entry = await Entry.create({
+      name: name.trim(),
+      imageUrl,
+      imagePublicId,
+      ownerId: req.ownerId,
+    });
     console.log('Entry saved:', entry._id.toString());
     res.status(201).json(entry);
   } catch (err) {
@@ -75,7 +87,7 @@ router.post('/', upload.single('photo'), async (req, res) => {
 // PUT /api/people/:id — update name and/or replace the photo
 router.put('/:id', upload.single('photo'), async (req, res) => {
   try {
-    const entry = await Entry.findById(req.params.id);
+    const entry = await Entry.findOne({ _id: req.params.id, ownerId: req.ownerId });
     if (!entry) return res.status(404).json({ error: 'Entry not found.' });
 
     if (typeof req.body.name === 'string' && req.body.name.trim()) {
@@ -100,7 +112,7 @@ router.put('/:id', upload.single('photo'), async (req, res) => {
 // DELETE /api/people/:id — remove the saved entry and their Cloudinary photo
 router.delete('/:id', async (req, res) => {
   try {
-    const entry = await Entry.findByIdAndDelete(req.params.id);
+    const entry = await Entry.findOneAndDelete({ _id: req.params.id, ownerId: req.ownerId });
     if (!entry) return res.status(404).json({ error: 'Entry not found.' });
     await deleteEntryPhoto(entry.imagePublicId);
     res.json({ success: true });

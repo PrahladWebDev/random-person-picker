@@ -15,6 +15,11 @@ export type SavedPerson = {
 };
 
 export type RootStackParamList = {
+  Login: undefined;
+  Register: undefined;
+  VerifyEmail: { email: string };
+  ForgotPassword: undefined;
+  ResetPassword: { email: string };
   Home: undefined;
   NumberOfPeople: undefined;
   AddPeople: { count: number };

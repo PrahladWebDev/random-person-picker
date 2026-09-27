@@ -1,4 +1,5 @@
 import { SavedPerson } from '../types/person';
+import { getStoredToken, clearStoredSession, notifySessionExpired } from '../context/AuthContext';
 
 // Set EXPO_PUBLIC_API_URL in a .env file at the project root, e.g.
 //   EXPO_PUBLIC_API_URL=http://192.168.1.23:4000/api
@@ -7,6 +8,15 @@ import { SavedPerson } from '../types/person';
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 export class ApiError extends Error {}
+
+// Every request carries this account's sign-in token, so the backend only
+// ever returns/modifies people saved by this account, not anyone else's.
+// Without this header, saved people (names + photos) would be visible to
+// every signed-in user — see backend/src/routes/people.js.
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await getStoredToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -17,14 +27,22 @@ async function handle<T>(res: Response): Promise<T> {
     } catch {
       // response wasn't JSON — keep the generic message
     }
+    if (res.status === 401) {
+      // Token missing/expired/invalid — drop the stale session so the app
+      // falls back to the sign-in screen instead of silently failing every
+      // subsequent request.
+      await clearStoredSession();
+      notifySessionExpired();
+    }
     throw new ApiError(message);
   }
   return res.json();
 }
 
-/** Fetch every person that's been saved for reuse across sessions. */
-export function fetchSavedPeople(): Promise<SavedPerson[]> {
-  return fetch(`${API_URL}/people`).then((res) => handle<SavedPerson[]>(res));
+/** Fetch every person this device has saved for reuse across sessions. */
+export async function fetchSavedPeople(): Promise<SavedPerson[]> {
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/people`, { headers }).then((res) => handle<SavedPerson[]>(res));
 }
 
 // Expo SDK 57's own global fetch has an unreliable multipart encoder for
@@ -49,15 +67,16 @@ function buildPhotoFormData(name: string, imageUri?: string) {
 }
 
 /** Save a new person (name + optional photo) for reuse in future sessions. */
-export function createSavedPerson(name: string, imageUri?: string): Promise<SavedPerson> {
+export async function createSavedPerson(name: string, imageUri?: string): Promise<SavedPerson> {
   const form = buildPhotoFormData(name, imageUri);
-  return fetch(`${API_URL}/people`, { method: 'POST', body: form }).then((res) =>
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/people`, { method: 'POST', body: form, headers }).then((res) =>
     handle<SavedPerson>(res)
   );
 }
 
 /** Update a saved person's name and/or replace their photo. */
-export function updateSavedPerson(
+export async function updateSavedPerson(
   id: string,
   updates: { name?: string; imageUri?: string }
 ): Promise<SavedPerson> {
@@ -66,14 +85,16 @@ export function updateSavedPerson(
   if (updates.imageUri) {
     appendPhoto(form, updates.imageUri);
   }
-  return fetch(`${API_URL}/people/${id}`, { method: 'PUT', body: form }).then((res) =>
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/people/${id}`, { method: 'PUT', body: form, headers }).then((res) =>
     handle<SavedPerson>(res)
   );
 }
 
 /** Permanently delete a saved person (and their Cloudinary photo). */
-export function deleteSavedPerson(id: string): Promise<void> {
-  return fetch(`${API_URL}/people/${id}`, { method: 'DELETE' }).then((res) =>
+export async function deleteSavedPerson(id: string): Promise<void> {
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/people/${id}`, { method: 'DELETE', headers }).then((res) =>
     handle<void>(res)
   );
 }
