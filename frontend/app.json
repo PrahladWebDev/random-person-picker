@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#6C5CE7"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -28,7 +23,7 @@
     },
     "android": {
       "package": "com.prahlad.randompick",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#6C5CE7"
@@ -40,6 +35,14 @@
       ]
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#6C5CE7"
+        }
+      ],
       [
         "expo-image-picker",
         {
