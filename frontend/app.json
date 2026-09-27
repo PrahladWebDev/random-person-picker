@@ -28,7 +28,7 @@
     },
     "android": {
       "package": "com.prahlad.randompick",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#6C5CE7"
