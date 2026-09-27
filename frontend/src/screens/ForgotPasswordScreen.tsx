@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/person';
 import AuthTextField from '../components/AuthTextField';
 import PrimaryButton from '../components/PrimaryButton';
+import AnimatedLogo from '../components/AnimatedLogo';
 import { useThemeColors } from '../useThemeColors';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/authApi';
@@ -42,6 +43,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <AnimatedLogo size={64} emoji="🔑" />
         <Text style={[styles.title, { color: colors.text }]}>Reset your password</Text>
         <Text style={[styles.subtitle, { color: colors.subtext }]}>
           Enter your account email and we'll send you a code to reset your password.

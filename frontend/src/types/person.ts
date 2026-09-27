@@ -23,6 +23,7 @@ export type RootStackParamList = {
   Home: undefined;
   NumberOfPeople: undefined;
   AddPeople: { count: number };
+  ImportContacts: undefined;
   Review: undefined;
   RandomPicker: undefined;
   Winner: { winner: Person };

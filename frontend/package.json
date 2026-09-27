@@ -15,6 +15,7 @@
     "@react-navigation/native-stack": "^7.3.10",
     "expo": "~57.0.21",
     "expo-audio": "~57.0.5",
+    "expo-contacts": "~57.0.6",
     "expo-haptics": "~57.0.3",
     "expo-image-picker": "~57.0.3",
     "expo-splash-screen": "~57.0.9",

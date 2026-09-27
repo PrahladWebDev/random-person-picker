@@ -18,12 +18,13 @@
       "bundleIdentifier": "com.prahlad.randompick",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "RandomPick needs access to your photos so you can add a picture for each person.",
-        "NSCameraUsageDescription": "RandomPick needs access to your camera so you can take a picture for each person."
+        "NSCameraUsageDescription": "RandomPick needs access to your camera so you can take a picture for each person.",
+        "NSContactsUsageDescription": "RandomPick needs access to your contacts so you can quickly import people instead of typing them in."
       }
     },
     "android": {
       "package": "com.prahlad.randompick",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#6C5CE7"
@@ -31,7 +32,8 @@
       "permissions": [
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CONTACTS"
       ]
     },
     "plugins": [
@@ -48,6 +50,12 @@
         {
           "photosPermission": "RandomPick needs access to your photos so you can add a picture for each person.",
           "cameraPermission": "RandomPick needs access to your camera so you can take a picture for each person."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "RandomPick needs access to your contacts so you can quickly import people instead of typing them in."
         }
       ]
     ],

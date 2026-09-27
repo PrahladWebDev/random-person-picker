@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/person';
 import AuthTextField from '../components/AuthTextField';
 import PrimaryButton from '../components/PrimaryButton';
+import AnimatedLogo from '../components/AnimatedLogo';
 import { useThemeColors } from '../useThemeColors';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/authApi';
@@ -68,6 +69,7 @@ export default function ResetPasswordScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <AnimatedLogo size={64} emoji="🔑" />
         <Text style={[styles.title, { color: colors.text }]}>Enter your reset code</Text>
         <Text style={[styles.subtitle, { color: colors.subtext }]}>
           We sent a 6-digit code to {email}. Enter it along with your new password.

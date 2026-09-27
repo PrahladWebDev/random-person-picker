@@ -25,6 +25,11 @@ export default function HomeScreen({ navigation }: Props) {
     navigation.navigate('SavedPeople');
   };
 
+  const handleImportContacts = () => {
+    clearAll();
+    navigation.navigate('ImportContacts');
+  };
+
   const handleSignOut = () => {
     Alert.alert('Sign out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
@@ -61,6 +66,12 @@ export default function HomeScreen({ navigation }: Props) {
           title="Use Saved People"
           variant="secondary"
           onPress={handleUseSaved}
+          style={styles.spaced}
+        />
+        <PrimaryButton
+          title="Import from Contacts"
+          variant="secondary"
+          onPress={handleImportContacts}
           style={styles.spaced}
         />
       </View>

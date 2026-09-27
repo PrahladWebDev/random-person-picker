@@ -13,6 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/person';
 import AuthTextField from '../components/AuthTextField';
 import PrimaryButton from '../components/PrimaryButton';
+import AnimatedLogo from '../components/AnimatedLogo';
 import { useThemeColors } from '../useThemeColors';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/authApi';
@@ -66,6 +67,7 @@ export default function RegisterScreen({ navigation }: Props) {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <AnimatedLogo size={64} />
           <Text style={[styles.title, { color: colors.text }]}>Create your account</Text>
           <Text style={[styles.subtitle, { color: colors.subtext }]}>
             We'll email you a code to verify it's really you.

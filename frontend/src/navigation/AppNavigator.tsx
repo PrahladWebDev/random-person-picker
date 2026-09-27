@@ -15,6 +15,7 @@ import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import HomeScreen from '../screens/HomeScreen';
 import NumberOfPeopleScreen from '../screens/NumberOfPeopleScreen';
 import AddPeopleScreen from '../screens/AddPeopleScreen';
+import ImportContactsScreen from '../screens/ImportContactsScreen';
 import ReviewScreen from '../screens/ReviewScreen';
 import RandomPickerScreen from '../screens/RandomPickerScreen';
 import WinnerScreen from '../screens/WinnerScreen';
@@ -55,6 +56,7 @@ export default function AppNavigator() {
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="NumberOfPeople" component={NumberOfPeopleScreen} />
             <Stack.Screen name="AddPeople" component={AddPeopleScreen} />
+            <Stack.Screen name="ImportContacts" component={ImportContactsScreen} />
             <Stack.Screen name="Review" component={ReviewScreen} />
             <Stack.Screen name="RandomPicker" component={RandomPickerScreen} />
             <Stack.Screen name="Winner" component={WinnerScreen} />

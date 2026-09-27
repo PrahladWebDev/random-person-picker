@@ -13,6 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/person';
 import AuthTextField from '../components/AuthTextField';
 import PrimaryButton from '../components/PrimaryButton';
+import AnimatedLogo from '../components/AnimatedLogo';
 import { useThemeColors } from '../useThemeColors';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/authApi';
@@ -56,9 +57,7 @@ export default function LoginScreen({ navigation }: Props) {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={[styles.logo, { backgroundColor: colors.primary }]}>
-            <Text style={styles.logoEmoji}>🎲</Text>
-          </View>
+          <AnimatedLogo />
           <Text style={[styles.title, { color: colors.text }]}>Welcome back</Text>
           <Text style={[styles.subtitle, { color: colors.subtext }]}>
             Sign in to access your saved people.
@@ -106,16 +105,6 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flexGrow: 1, paddingHorizontal: 24, paddingVertical: 40, justifyContent: 'center' },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  logoEmoji: { fontSize: 32 },
   title: { fontSize: 26, fontWeight: '800', textAlign: 'center', marginBottom: 6 },
   subtitle: { fontSize: 15, textAlign: 'center', marginBottom: 28 },
   formError: { fontSize: 14, marginBottom: 14, textAlign: 'center' },

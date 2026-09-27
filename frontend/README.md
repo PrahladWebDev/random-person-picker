@@ -26,12 +26,19 @@ backend (photo included) — pick any number of them and jump straight to Review
 From Review, **Save to My People** persists the current list to the backend so
 it's available next time.
 
+Home also has **Import from Contacts**, which reads the phone's own contact
+list (`expo-contacts`), lets you search and multi-select the people you want,
+then drops them straight into Review with their contact photo if they have
+one. Nothing is uploaded anywhere for this — it stays on-device unless you
+later choose "Save to My People".
+
 ## Notes
 
 - The current session's people list is still in-memory (React Context) — only
   people explicitly saved via "Save to My People" / the Saved People screen
   persist across app restarts, in MongoDB, with photos hosted on Cloudinary.
 - Photo picking uses `expo-image-picker`; permission is requested at pick time and cancellation is handled gracefully.
+- Contact import uses `expo-contacts`; permission is requested when opening the screen, entries with no name are skipped, and duplicate names are collapsed.
 - Selection uses `Math.floor(Math.random() * people.length)` so every person has equal probability.
 - The shuffle plays a short tick sound on every step (`expo-audio`) and a chime when it lands on the winner; haptics still fire alongside them.
 - Light/dark mode is automatic via `useColorScheme`.
