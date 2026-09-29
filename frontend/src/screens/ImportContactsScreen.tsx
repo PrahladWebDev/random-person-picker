@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // requestPermissionsAsync, Fields, SortTypes) still exist, but only under
 // the /legacy subpath.
 import * as Contacts from 'expo-contacts/legacy';
+import * as FileSystem from 'expo-file-system/legacy';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/person';
 import PrimaryButton from '../components/PrimaryButton';
@@ -105,9 +106,32 @@ export default function ImportContactsScreen({ navigation }: Props) {
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
 
-  const handleUseSelected = () => {
+  const handleUseSelected = async () => {
     const chosen = contacts.filter((c) => selected[c.id]);
-    addPeople(chosen.map((c) => ({ name: c.name, imageUri: c.imageUri })));
+
+    // Contact photos come back as content:// (Android) / ph:// (iOS) URIs
+    // owned by the Contacts provider, not real files in our app's storage.
+    // Those display fine in <Image> but can't be streamed into a multipart
+    // upload the way a file:// URI from the camera/gallery can, which is
+    // why saving a contact's photo was silently failing. Copy each photo
+    // into our own cache first so it becomes a normal file:// URI.
+    const withLocalPhotos = await Promise.all(
+      chosen.map(async (c) => {
+        if (!c.imageUri) return { name: c.name, imageUri: undefined };
+        try {
+          const dest = `${FileSystem.cacheDirectory}${c.id}.jpg`;
+          await FileSystem.copyAsync({ from: c.imageUri, to: dest });
+          return { name: c.name, imageUri: dest };
+        } catch (e) {
+          // Couldn't copy the contact photo — fall back to no photo rather
+          // than failing the whole import.
+          console.warn('Could not copy contact photo', c.id, e);
+          return { name: c.name, imageUri: undefined };
+        }
+      })
+    );
+
+    addPeople(withLocalPhotos);
     navigation.navigate('Review');
   };
 
