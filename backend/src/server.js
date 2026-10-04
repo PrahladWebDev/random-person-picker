@@ -4,6 +4,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const peopleRoutes = require('./routes/people');
 const authRoutes = require('./routes/auth');
+const groupRoutes = require('./routes/groups');
+const historyRoutes = require('./routes/history');
 
 const app = express();
 app.use(cors());
@@ -12,6 +14,8 @@ app.use(express.json({ limit: '10mb' }));
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/people', peopleRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/history', historyRoutes);
 
 const PORT = process.env.PORT || 4000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/randompick';

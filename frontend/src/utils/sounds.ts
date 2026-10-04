@@ -1,4 +1,5 @@
 import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from 'expo-audio';
+import { isSoundEnabled } from './feedback';
 
 const tickSource = require('../../assets/sounds/tick.wav');
 const winSource = require('../../assets/sounds/win.wav');
@@ -25,6 +26,7 @@ async function ensureReady() {
 
 /** Plays the short spin "tick" — called on every step of the shuffle. */
 export async function playTickSound() {
+  if (!isSoundEnabled()) return;
   await ensureReady();
   if (!tickPlayer) return;
   try {
@@ -37,6 +39,7 @@ export async function playTickSound() {
 
 /** Plays the cheerful chime when a winner is landed on. */
 export async function playWinSound() {
+  if (!isSoundEnabled()) return;
   await ensureReady();
   if (!winPlayer) return;
   try {

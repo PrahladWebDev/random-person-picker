@@ -74,6 +74,12 @@ export default function HomeScreen({ navigation }: Props) {
           onPress={handleImportContacts}
           style={styles.spaced}
         />
+        <PrimaryButton
+          title="Winner History"
+          variant="secondary"
+          onPress={() => navigation.navigate('History')}
+          style={styles.spaced}
+        />
       </View>
     </SafeAreaView>
   );

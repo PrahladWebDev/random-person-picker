@@ -1,4 +1,4 @@
-import { SavedPerson } from '../types/person';
+import { SavedPerson, SavedGroup, HistoryEntry } from '../types/person';
 import { getStoredToken, clearStoredSession, notifySessionExpired } from '../context/AuthContext';
 
 // Set EXPO_PUBLIC_API_URL in a .env file at the project root, e.g.
@@ -95,6 +95,67 @@ export async function updateSavedPerson(
 export async function deleteSavedPerson(id: string): Promise<void> {
   const headers = await authHeaders();
   return fetch(`${API_URL}/people/${id}`, { method: 'DELETE', headers }).then((res) =>
+    handle<void>(res)
+  );
+}
+
+// ---------------------------------------------------------------- Groups --
+
+/** Fetch this account's saved groups. */
+export async function fetchGroups(): Promise<SavedGroup[]> {
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/groups`, { headers }).then((res) => handle<SavedGroup[]>(res));
+}
+
+/** Create a group from a set of saved-person ids. */
+export async function createGroup(name: string, memberIds: string[]): Promise<SavedGroup> {
+  const headers = { ...(await authHeaders()), 'Content-Type': 'application/json' };
+  return fetch(`${API_URL}/groups`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ name, memberIds }),
+  }).then((res) => handle<SavedGroup>(res));
+}
+
+/** Delete a group (the people in it are untouched). */
+export async function deleteGroup(id: string): Promise<void> {
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/groups/${id}`, { method: 'DELETE', headers }).then((res) =>
+    handle<void>(res)
+  );
+}
+
+// --------------------------------------------------------------- History --
+
+/** Fetch past picks, newest first. */
+export async function fetchHistory(): Promise<HistoryEntry[]> {
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/history`, { headers }).then((res) => handle<HistoryEntry[]>(res));
+}
+
+/** Record a pick. Only remote (http) photo URLs are kept by the server. */
+export async function addHistory(
+  winners: Array<{ name: string; imageUrl?: string }>,
+  poolSize: number
+): Promise<HistoryEntry> {
+  const headers = { ...(await authHeaders()), 'Content-Type': 'application/json' };
+  return fetch(`${API_URL}/history`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ winners, poolSize }),
+  }).then((res) => handle<HistoryEntry>(res));
+}
+
+export async function deleteHistoryEntry(id: string): Promise<void> {
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/history/${id}`, { method: 'DELETE', headers }).then((res) =>
+    handle<void>(res)
+  );
+}
+
+export async function clearHistory(): Promise<void> {
+  const headers = await authHeaders();
+  return fetch(`${API_URL}/history`, { method: 'DELETE', headers }).then((res) =>
     handle<void>(res)
   );
 }

@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PeopleProvider } from './src/context/PeopleContext';
 import { AuthProvider } from './src/context/AuthContext';
+import { SettingsProvider } from './src/context/SettingsContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { releaseSounds } from './src/utils/sounds';
 
@@ -34,10 +35,12 @@ export default function App() {
   return (
     <SafeAreaProvider onLayout={onRootLayout}>
       <AuthProvider>
-        <PeopleProvider>
-          <StatusBar style="auto" />
-          <AppNavigator />
-        </PeopleProvider>
+        <SettingsProvider>
+          <PeopleProvider>
+            <StatusBar style="auto" />
+            <AppNavigator />
+          </PeopleProvider>
+        </SettingsProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

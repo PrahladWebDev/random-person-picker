@@ -11,12 +11,19 @@ type PeopleContextValue = {
   allNamed: boolean;
   /** Appends people (e.g. picked from the saved-people list) to the current session. */
   addPeople: (newPeople: Array<Omit<Person, 'id'>>) => void;
+  /** Replaces the whole session list (used by Saved People / Import so re-picking never stacks duplicates). */
+  replacePeople: (newPeople: Array<Omit<Person, 'id'>>) => void;
+  /** ids of people who already won this session (used by "no repeats"). */
+  pastWinnerIds: string[];
+  recordWinners: (ids: string[]) => void;
+  resetWinners: () => void;
 };
 
 const PeopleContext = createContext<PeopleContextValue | undefined>(undefined);
 
 export function PeopleProvider({ children }: { children: ReactNode }) {
   const [people, setPeople] = useState<Person[]>([]);
+  const [pastWinnerIds, setPastWinnerIds] = useState<string[]>([]);
 
   const setPeopleCount = (count: number) => {
     setPeople((prev) => {
@@ -40,10 +47,24 @@ export function PeopleProvider({ children }: { children: ReactNode }) {
     setPeople((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const clearAll = () => setPeople([]);
+  const clearAll = () => {
+    setPeople([]);
+    setPastWinnerIds([]);
+  };
+
+  const recordWinners = (ids: string[]) => {
+    setPastWinnerIds((prev) => [...new Set([...prev, ...ids])]);
+  };
+
+  const resetWinners = () => setPastWinnerIds([]);
 
   const addPeople = (newPeople: Array<Omit<Person, 'id'>>) => {
     setPeople((prev) => [...prev, ...newPeople.map((p) => ({ ...p, id: generateId() }))]);
+  };
+
+  const replacePeople = (newPeople: Array<Omit<Person, 'id'>>) => {
+    setPeople(newPeople.map((p) => ({ ...p, id: generateId() })));
+    setPastWinnerIds([]); // brand-new list, so nobody has won yet
   };
 
   const allNamed = useMemo(
@@ -59,6 +80,10 @@ export function PeopleProvider({ children }: { children: ReactNode }) {
     clearAll,
     allNamed,
     addPeople,
+    replacePeople,
+    pastWinnerIds,
+    recordWinners,
+    resetWinners,
   };
 
   return <PeopleContext.Provider value={value}>{children}</PeopleContext.Provider>;

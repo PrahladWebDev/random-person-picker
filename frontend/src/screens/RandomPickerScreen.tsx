@@ -1,14 +1,16 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, Image, Animated, StyleSheet, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types/person';
+import { RootStackParamList, Person } from '../types/person';
 import PrimaryButton from '../components/PrimaryButton';
 import { useThemeColors } from '../useThemeColors';
 import { usePeople } from '../context/PeopleContext';
-import { pickRandomPerson } from '../utils/randomPicker';
+import { useSettings } from '../context/SettingsContext';
+import { pickRandomPeople } from '../utils/randomPicker';
 import { playTickSound, playWinSound } from '../utils/sounds';
+import { hapticSuccess, hapticLight } from '../utils/feedback';
+import { addHistory } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RandomPicker'>;
 
@@ -34,7 +36,16 @@ const STATUS_TEXT: Record<ShuffleStyle, string> = {
 
 export default function RandomPickerScreen({ navigation }: Props) {
   const colors = useThemeColors();
-  const { people } = usePeople();
+  const { people, pastWinnerIds, recordWinners, resetWinners } = usePeople();
+  const { noRepeats, winnerCount } = useSettings();
+
+  // Everyone who can still win. With "no repeats" on, earlier winners sit out.
+  const pool = useMemo(
+    () => (noRepeats ? people.filter((p) => !pastWinnerIds.includes(p.id)) : people),
+    [people, noRepeats, pastWinnerIds]
+  );
+  // Never ask for more winners than there are eligible people.
+  const winnersToPick = Math.max(1, Math.min(winnerCount, pool.length));
   const [isShuffling, setIsShuffling] = useState(false);
   const [hasLanded, setHasLanded] = useState(false);
   const [isTeasing, setIsTeasing] = useState(false);
@@ -106,11 +117,11 @@ export default function RandomPickerScreen({ navigation }: Props) {
     });
   }
 
-  function landOnWinner(winnerIndex: number) {
+  function landOnWinner(winnerIndex: number, winners: Person[], poolSize: number) {
     setDisplayIndex(winnerIndex);
     setIsTeasing(false);
     setHasLanded(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticSuccess();
     playWinSound();
 
     glow.setValue(0);
@@ -139,14 +150,23 @@ export default function RandomPickerScreen({ navigation }: Props) {
     ]).start();
 
     setTimeout(() => {
-      const winner = people[winnerIndex];
       setIsShuffling(false);
-      navigation.replace('Winner', { winner });
+      recordWinners(winners.map((w) => w.id));
+      // Log to the account's history. Fire-and-forget: a failed network call
+      // must never block or break the reveal.
+      addHistory(
+        winners.map((w) => ({
+          name: w.name,
+          imageUrl: w.imageUri && /^https?:\/\//.test(w.imageUri) ? w.imageUri : undefined,
+        })),
+        poolSize
+      ).catch(() => {});
+      navigation.replace('Winner', { winners, poolSize });
     }, SETTLE_HOLD_MS);
   }
 
   function handlePick() {
-    if (people.length === 0 || isShuffling) return;
+    if (pool.length === 0 || isShuffling) return;
     setIsShuffling(true);
     setHasLanded(false);
     setIsTeasing(false);
@@ -157,16 +177,19 @@ export default function RandomPickerScreen({ navigation }: Props) {
     const style = SHUFFLE_STYLES[Math.floor(Math.random() * SHUFFLE_STYLES.length)];
     setShuffleStyle(style);
 
-    const winnerIndex = people.indexOf(pickRandomPerson(people));
-    const tickCount = Math.max(MIN_TICKS, people.length * 4);
+    const winners = pickRandomPeople(pool, winnersToPick);
+    const poolSize = pool.length;
+    // The spin lands on the first winner; the result screen shows them all.
+    const winnerIndex = pool.indexOf(winners[0]);
+    const tickCount = Math.max(MIN_TICKS, pool.length * 4);
 
     // Pick a decoy to hover on for the last couple of ticks — someone who
     // isn't the winner — so the spin genuinely looks like it might land on
     // them before flipping to the real pick. Skipped when there's only one
     // person, since there's no one else to tease.
     const decoyIndex =
-      people.length > 1
-        ? (winnerIndex + 1 + Math.floor(Math.random() * (people.length - 1))) % people.length
+      pool.length > 1
+        ? (winnerIndex + 1 + Math.floor(Math.random() * (pool.length - 1))) % pool.length
         : winnerIndex;
 
     let step = 0;
@@ -179,20 +202,19 @@ export default function RandomPickerScreen({ navigation }: Props) {
         const isLastTick = step >= tickCount;
 
         if (isLastTick) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-          landOnWinner(winnerIndex);
+          landOnWinner(winnerIndex, winners, poolSize);
           return;
         }
 
         const remaining = tickCount - step;
-        if (remaining <= 2 && people.length > 1) {
+        if (remaining <= 2 && pool.length > 1) {
           // Hold on the decoy right before the reveal — this is the "almost
           // chose someone else" beat that makes the real pick feel earned
           // instead of obvious from the moment the spin starts slowing down.
           cursor = decoyIndex;
           setIsTeasing(true);
         } else {
-          cursor = (cursor + 1 + Math.floor(Math.random() * 2)) % people.length;
+          cursor = (cursor + 1 + Math.floor(Math.random() * 2)) % pool.length;
         }
 
         if (style === 'reel') {
@@ -203,7 +225,7 @@ export default function RandomPickerScreen({ navigation }: Props) {
           advanceCycle(cursor);
         }
         playTickSound();
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        hapticLight();
 
         delay = Math.min(delay * STEP_GROWTH, 420);
         scheduleNext();
@@ -213,7 +235,7 @@ export default function RandomPickerScreen({ navigation }: Props) {
     scheduleNext();
   }
 
-  const current = people[displayIndex];
+  const current = pool[displayIndex] ?? pool[0];
 
   const glowScale = glow.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] });
   const glowOpacity = glow.interpolate({ inputRange: [0, 1], outputRange: [0, 0.35] });
@@ -224,7 +246,8 @@ export default function RandomPickerScreen({ navigation }: Props) {
 
   let statusText = 'Ready to pick!';
   if (isShuffling && !hasLanded) statusText = isTeasing ? 'Almost…' : STATUS_TEXT[shuffleStyle];
-  if (hasLanded) statusText = '🎉 Got it!';
+  if (hasLanded) statusText = winnersToPick > 1 ? `🎉 Got ${winnersToPick} winners!` : '🎉 Got it!';
+  if (pool.length === 0) statusText = 'Everyone has won!';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -258,11 +281,28 @@ export default function RandomPickerScreen({ navigation }: Props) {
         </Animated.Text>
       </View>
 
-      <PrimaryButton
-        title={isShuffling ? (hasLanded ? '🎉 Picked!' : 'Shuffling…') : '🎲 PICK RANDOM PERSON'}
-        onPress={handlePick}
-        disabled={isShuffling || people.length === 0}
-      />
+      {pool.length === 0 ? (
+        <View>
+          <Text style={[styles.note, { color: colors.subtext }]}>
+            Everyone has already won and "No repeat winners" is on.
+          </Text>
+          <PrimaryButton title="Reset winners" onPress={resetWinners} />
+        </View>
+      ) : (
+        <PrimaryButton
+          title={
+            isShuffling
+              ? hasLanded
+                ? '🎉 Picked!'
+                : 'Shuffling…'
+              : winnersToPick > 1
+              ? `🎲 PICK ${winnersToPick} RANDOM PEOPLE`
+              : '🎲 PICK RANDOM PERSON'
+          }
+          onPress={handlePick}
+          disabled={isShuffling}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -313,5 +353,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     marginTop: 20,
+  },
+  note: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 12,
   },
 });

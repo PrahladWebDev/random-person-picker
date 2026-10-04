@@ -19,17 +19,19 @@
     "expo-file-system": "~57.0.7",
     "expo-haptics": "~57.0.3",
     "expo-image-picker": "~57.0.3",
+    "expo-sharing": "~57.0.22",
     "expo-splash-screen": "~57.0.9",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.25.2"
+    "react-native-screens": "~4.25.2",
+    "react-native-view-shot": "5.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/react": "~19.2.0",
     "babel-preset-expo": "~57.0.13",
-    "typescript": "~7.0.2",
-    "@types/react": "~19.2.0"
+    "typescript": "~7.0.2"
   }
 }

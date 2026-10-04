@@ -34,7 +34,7 @@ type ContactRow = {
 
 // Contacts can have multiple phone numbers/emails but we only need a name +
 // photo, so collapse the raw expo-contacts shape down to this immediately.
-function toContactRow(c: Contacts.Contact): ContactRow | null {
+function toContactRow(c: Contacts.ExistingContact): ContactRow | null {
   const name = c.name?.trim();
   if (!name) return null; // Skip entries with no usable display name.
   return { id: c.id ?? name, name, imageUri: c.image?.uri };
@@ -44,7 +44,7 @@ type PermissionState = 'checking' | 'granted' | 'denied';
 
 export default function ImportContactsScreen({ navigation }: Props) {
   const colors = useThemeColors();
-  const { addPeople } = usePeople();
+  const { replacePeople } = usePeople();
 
   const [permission, setPermission] = useState<PermissionState>('checking');
   const [loading, setLoading] = useState(false);
@@ -106,6 +106,19 @@ export default function ImportContactsScreen({ navigation }: Props) {
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
 
+  // Select all selects what's currently visible, so it works with the search box.
+  const selectAllVisible = () => {
+    setSelected((prev) => {
+      const next = { ...prev };
+      filtered.forEach((c) => {
+        next[c.id] = true;
+      });
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelected({});
+
   const handleUseSelected = async () => {
     const chosen = contacts.filter((c) => selected[c.id]);
 
@@ -131,7 +144,7 @@ export default function ImportContactsScreen({ navigation }: Props) {
       })
     );
 
-    addPeople(withLocalPhotos);
+    replacePeople(withLocalPhotos);
     navigation.navigate('Review');
   };
 
@@ -207,6 +220,26 @@ export default function ImportContactsScreen({ navigation }: Props) {
             autoCorrect={false}
           />
 
+          {contacts.length > 0 && (
+            <View style={styles.selectBar}>
+              <Pressable onPress={selectAllVisible} hitSlop={8}>
+                <Text style={[styles.selectAction, { color: colors.primary }]}>
+                  Select all{query.trim() ? ' shown' : ''} ({filtered.length})
+                </Text>
+              </Pressable>
+              <Pressable onPress={clearSelection} hitSlop={8} disabled={selectedCount === 0}>
+                <Text
+                  style={[
+                    styles.selectAction,
+                    { color: colors.subtext, opacity: selectedCount === 0 ? 0.4 : 1 },
+                  ]}
+                >
+                  Clear
+                </Text>
+              </Pressable>
+            </View>
+          )}
+
           {filtered.length === 0 ? (
             <Text style={[styles.empty, { color: colors.subtext }]}>
               {contacts.length === 0
@@ -261,6 +294,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 12,
   },
+  selectBar: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  selectAction: { fontSize: 13, fontWeight: '600' },
   scroll: { paddingBottom: 16 },
   row: {
     flexDirection: 'row',

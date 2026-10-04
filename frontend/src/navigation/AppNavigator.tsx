@@ -20,6 +20,7 @@ import ReviewScreen from '../screens/ReviewScreen';
 import RandomPickerScreen from '../screens/RandomPickerScreen';
 import WinnerScreen from '../screens/WinnerScreen';
 import SavedPeopleScreen from '../screens/SavedPeopleScreen';
+import HistoryScreen from '../screens/HistoryScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -61,6 +62,7 @@ export default function AppNavigator() {
             <Stack.Screen name="RandomPicker" component={RandomPickerScreen} />
             <Stack.Screen name="Winner" component={WinnerScreen} />
             <Stack.Screen name="SavedPeople" component={SavedPeopleScreen} />
+            <Stack.Screen name="History" component={HistoryScreen} />
           </>
         ) : (
           <>

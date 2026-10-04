@@ -2,6 +2,8 @@ export type Person = {
   id: string;
   name: string;
   imageUri?: string;
+  /** Set when this person came from the saved list, so we never re-save a duplicate. */
+  savedId?: string;
 };
 
 // A person saved on the backend (MongoDB), with a photo hosted on Cloudinary.
@@ -12,6 +14,21 @@ export type SavedPerson = {
   name: string;
   imageUrl?: string;
   createdAt?: string;
+};
+
+// A named set of saved people, loaded in one tap.
+export type SavedGroup = {
+  _id: string;
+  name: string;
+  memberIds: string[];
+};
+
+// One past pick, stored per account on the backend.
+export type HistoryEntry = {
+  _id: string;
+  winners: Array<{ name: string; imageUrl?: string }>;
+  poolSize: number;
+  createdAt: string;
 };
 
 export type RootStackParamList = {
@@ -26,6 +43,7 @@ export type RootStackParamList = {
   ImportContacts: undefined;
   Review: undefined;
   RandomPicker: undefined;
-  Winner: { winner: Person };
+  Winner: { winners: Person[]; poolSize: number };
+  History: undefined;
   SavedPeople: undefined;
 };

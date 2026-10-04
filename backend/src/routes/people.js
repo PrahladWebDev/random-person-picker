@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const Entry = require('../models/Entry');
+const Group = require('../models/Group');
 const { uploadEntryPhoto, deleteEntryPhoto } = require('../config/cloudinary');
 const { requireAuth } = require('../middleware/auth');
 
@@ -115,6 +116,11 @@ router.delete('/:id', async (req, res) => {
     const entry = await Entry.findOneAndDelete({ _id: req.params.id, ownerId: req.ownerId });
     if (!entry) return res.status(404).json({ error: 'Entry not found.' });
     await deleteEntryPhoto(entry.imagePublicId);
+    // Drop this person from any groups they were in.
+    await Group.updateMany(
+      { ownerId: req.ownerId },
+      { $pull: { memberIds: entry._id.toString() } }
+    );
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete entry.' });
